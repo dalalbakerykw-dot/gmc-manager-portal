@@ -170,6 +170,11 @@ main{padding:20px;max-width:1060px;margin:0 auto}
     <span class="brand-name">GMC <span>Plexiglass</span></span>
   </a>
   <div class="header-right">
+    <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)">
+      <div class="sync-dot" id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:var(--muted)"></div>
+      <span id="sync-txt">—</span>
+      <button onclick="manualSync()" class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:.72rem">↻ Sync</button>
+    </div>
     <span class="header-date" id="hdr-date"></span>
     <span class="portal-badge">Manager Portal</span>
   </div>
@@ -455,6 +460,30 @@ const MATS=[
 const SHEET_IN2=4608;
 
 /* ── STORAGE (shared with Employee Portal) ── */
+const FB='https://gmc-plexiglass-default-rtdb.firebaseio.com';
+const SHARED=['hours','gas','orders'];
+
+async function syncFromFirebase(){
+  const dot=$('sync-dot'),txt=$('sync-txt');
+  if(dot){dot.className='sync-dot syncing';dot.style.background='var(--warning)';}
+  if(txt)txt.textContent='Syncing...';
+  let connected=false;
+  for(const key of SHARED){
+    try{
+      const r=await fetch(`${FB}/${key}.json`);
+      if(r.ok) connected=true;
+      const d=await r.json();
+      if(d!==null){
+        const arr=(Array.isArray(d)?d:Object.values(d)).filter(x=>x!==null);
+        localStorage.setItem('gmc_'+key,JSON.stringify(arr));
+      }
+    }catch(e){}
+  }
+  if(dot){dot.className='sync-dot';dot.style.background=connected?'var(--success)':'var(--danger)';}
+  if(txt)txt.textContent=connected?'Live data':'Offline';
+  return connected;
+}
+
 const ld=k=>JSON.parse(localStorage.getItem('gmc_'+k)||'[]');
 const sv=(k,v)=>localStorage.setItem('gmc_'+k,JSON.stringify(v));
 const ldS=()=>JSON.parse(localStorage.getItem('gmc_settings')||'{}');
@@ -961,7 +990,19 @@ async function delDoc(key){
   renderDocs();
 }
 
-initDB().then(()=>{init();});
+function manualSync(){
+  syncFromFirebase().then(()=>{
+    renderDash();renderOrders();renderCustomers();renderFinance();renderStaff();
+  });
+}
+// Add sync-dot style
+const style=document.createElement('style');
+style.textContent='.sync-dot.syncing{animation:pulse 1s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}';
+document.head.appendChild(style);
+
+initDB().then(()=>{
+  syncFromFirebase().then(()=>init());
+});
 </script>
 </body>
 </html>
