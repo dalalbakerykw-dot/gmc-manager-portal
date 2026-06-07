@@ -22,7 +22,7 @@
   #syncDot span { width:8px;height:8px;border-radius:50%;background:var(--amber); }
   #syncDot.ok span { background:var(--green); }
   .btn-sync { background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px; }
-  nav { background:var(--primary);padding:0 24px;display:flex;gap:4px;border-top:1px solid rgba(255,255,255,.1); }
+  nav { background:var(--primary);padding:0 24px;display:flex;gap:4px;border-top:1px solid rgba(255,255,255,.1);flex-wrap:wrap; }
   nav button { background:none;border:none;color:rgba(255,255,255,.7);padding:12px 16px;cursor:pointer;font-size:13px;font-weight:500;border-bottom:3px solid transparent;transition:all .2s; }
   nav button:hover { color:#fff; }
   nav button.active { color:var(--accent);border-bottom-color:var(--accent); }
@@ -35,10 +35,10 @@
   .card { background:var(--card);border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.07); }
   .card h3 { font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px; }
   .card .big { font-size:28px;font-weight:700;color:var(--primary); }
-  .card .sub { font-size:12px;color:var(--muted);margin-top:4px; }
   .card.accent-border { border-left:4px solid var(--accent); }
   .card.green-border { border-left:4px solid var(--green); }
   .card.red-border { border-left:4px solid var(--red); }
+  .card.purple-border { border-left:4px solid #8e44ad; }
   .sec-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:16px; }
   .sec-head h2 { font-size:20px;color:var(--primary); }
   .form-card { background:var(--card);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.07); }
@@ -62,6 +62,7 @@
   .badge-green { background:#d5f5e3;color:#1e8449; }
   .badge-amber { background:#fdebd0;color:#935116; }
   .badge-blue { background:#d6eaf8;color:#1a5276; }
+  .badge-purple { background:#e8daef;color:#6c3483; }
   .pnl-row { display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px; }
   .pnl-row:last-child { border:none;font-size:18px;font-weight:700; }
   .pos { color:var(--green); } .neg { color:var(--red); }
@@ -69,6 +70,9 @@
   .staff-box h3 { color:var(--accent);font-size:13px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px; }
   .st-row { display:flex;justify-content:space-between;font-size:14px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.1); }
   .st-row:last-child { border:none;font-size:18px;font-weight:700;color:var(--accent);padding-top:12px; }
+  .del-fee-badge { display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700; }
+  .del-50 { background:#d5f5e3;color:#1e8449; }
+  .del-75 { background:#fdebd0;color:#935116; }
   .bar-chart { display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:12px; }
   .bar-col { display:flex;flex-direction:column;align-items:center;flex:1;gap:4px; }
   .bar { width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px; }
@@ -103,9 +107,9 @@
   <div style="margin-bottom:20px;"><h2 style="color:var(--primary);font-size:22px;">Business Overview</h2><p style="color:var(--muted);font-size:14px;" id="dashDate"></p></div>
   <div class="grid g5" style="margin-bottom:20px;">
     <div class="card accent-border"><h3>Revenue (Month)</h3><div class="big" id="dRev">$0</div></div>
-    <div class="card accent-border"><h3>Orders (Month)</h3><div class="big" id="dOrdCount">0</div></div>
+    <div class="card accent-border"><h3>Orders</h3><div class="big" id="dOrdCount">0</div></div>
     <div class="card accent-border"><h3>Sheets Sold</h3><div class="big" id="dSheets">0</div></div>
-    <div class="card red-border"><h3>Staff Cost</h3><div class="big" id="dStaffCost">$0</div></div>
+    <div class="card purple-border"><h3>Deliveries</h3><div class="big" id="dDelCount">0</div></div>
     <div class="card green-border"><h3>Net Profit</h3><div class="big" id="dProfit">$0</div></div>
   </div>
   <div class="grid g2" style="margin-bottom:20px;">
@@ -150,7 +154,6 @@
       <label>Customer <select id="noCustomer" onchange="fillCust()"><option value="">-- Select --</option></select></label>
       <label>Customer Name <input type="text" id="noCustomerName" placeholder="Or type new name"></label>
     </div>
-    <!-- Sheet fields -->
     <div id="noSheetFields">
       <div class="form-row">
         <label>Material
@@ -184,7 +187,6 @@
         <label>Markup (%) <input type="number" id="noMarkup" value="0" oninput="calcNo()"></label>
       </div>
     </div>
-    <!-- Cut fields -->
     <div id="noCutFields" style="display:none;">
       <div class="form-row">
         <label>Material Type
@@ -210,7 +212,6 @@
         <label>Cuts <input type="number" id="noCutQty" value="1" min="1" oninput="calcNo()"></label>
       </div>
     </div>
-    <!-- Totals -->
     <div class="form-row">
       <label>Subtotal <input type="text" id="noSubtotal" class="calc" readonly></label>
       <label>TPS (5%) <input type="text" id="noTPS" class="calc" readonly></label>
@@ -218,6 +219,13 @@
       <label>TOTAL <input type="text" id="noTotal" class="calc" readonly style="font-size:15px;color:var(--green);font-weight:700;"></label>
     </div>
     <div class="form-row">
+      <label>Delivery?
+        <select id="noDelivery" onchange="calcNo()">
+          <option value="0">No Delivery</option>
+          <option value="50">Yes — ≤ 30km ($50)</option>
+          <option value="75">Yes — > 30km ($75)</option>
+        </select>
+      </label>
       <label>Status <select id="noStatus"><option>Pending</option><option>In Progress</option><option>Ready</option><option>Delivered</option><option>Paid</option></select></label>
       <label style="flex:2;">Notes <input type="text" id="noNotes" placeholder="Customer notes..."></label>
       <label>Attachment <input type="file" id="noFile" accept="image/*,.pdf" style="padding:6px;"></label>
@@ -258,26 +266,33 @@
     <div class="st-row"><span>Sheet Commission (15%)</span><span id="stComm">$0.00</span></div>
     <div class="st-row"><span>Cut Material Commission (15%)</span><span id="stCutMatComm">$0.00</span></div>
     <div class="st-row"><span>Cut Fees ($20/cut)</span><span id="stCutFees">$0.00</span></div>
+    <div class="st-row"><span>🚚 Delivery Fees</span><span id="stDelivery">$0.00</span></div>
     <div class="st-row"><span>Gas / Travel</span><span id="stGas">$0.00</span></div>
     <div class="st-row"><span>TOTAL DUE</span><span id="stTotal">$0.00</span></div>
   </div>
-  <div class="grid g3" style="margin-bottom:16px;">
+  <div class="grid g4" style="margin-bottom:16px;">
     <div class="card accent-border"><h3>Sheet Orders</h3><div class="big" id="stSheetOrds">0</div></div>
     <div class="card accent-border"><h3>Cut Orders</h3><div class="big" id="stCutOrds">0</div></div>
+    <div class="card purple-border"><h3>Deliveries</h3><div class="big" id="stDelCount">0</div></div>
     <div class="card accent-border"><h3>Gas Entries</h3><div class="big" id="stGasCount">0</div></div>
   </div>
-  <div class="grid g2">
-    <div class="card"><h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">Orders Log (from Employee)</h3>
+  <div class="grid g3">
+    <div class="card" style="grid-column:span 2;"><h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">Orders Log</h3>
       <div class="table-wrap"><table>
         <thead><tr><th>Date</th><th>Customer</th><th>Type</th><th>Material</th><th>Customer $</th><th>My Earnings</th></tr></thead>
-        <tbody id="stOrdTbl"><tr><td colspan="6" style="text-align:center;color:var(--muted);">No data synced</td></tr></tbody>
+        <tbody id="stOrdTbl"><tr><td colspan="6" style="text-align:center;color:var(--muted);">No data</td></tr></tbody>
       </table></div></div>
-    <div class="card"><h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">Gas Log (from Employee)</h3>
+    <div class="card"><h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">Delivery Log</h3>
       <div class="table-wrap"><table>
-        <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>KM</th></tr></thead>
-        <tbody id="stGasTbl"><tr><td colspan="4" style="text-align:center;color:var(--muted);">No data</td></tr></tbody>
+        <thead><tr><th>Date</th><th>Destination</th><th>KM</th><th>Fee</th></tr></thead>
+        <tbody id="stDelTbl"><tr><td colspan="4" style="text-align:center;color:var(--muted);">No data</td></tr></tbody>
       </table></div></div>
   </div>
+  <div style="margin-top:16px;" class="card"><h3 style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">Gas Log</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>KM</th></tr></thead>
+      <tbody id="stGasTbl"><tr><td colspan="4" style="text-align:center;color:var(--muted);">No data</td></tr></tbody>
+    </table></div></div>
 </div>
 
 <!-- FINANCIALS -->
@@ -291,6 +306,7 @@
       <div class="pnl-row"><span>— Material Cost (est. 60%)</span><span class="neg" id="pnlMat">$0.00</span></div>
       <div class="pnl-row"><span>— Employee Commission (15%)</span><span class="neg" id="pnlComm">$0.00</span></div>
       <div class="pnl-row"><span>— Cut Fees Paid to Employee</span><span class="neg" id="pnlCutFees">$0.00</span></div>
+      <div class="pnl-row"><span>— Delivery Fees Paid to Employee</span><span class="neg" id="pnlDelivery">$0.00</span></div>
       <div class="pnl-row"><span>— Gas / Travel</span><span class="neg" id="pnlGas">$0.00</span></div>
       <div class="pnl-row"><span>NET PROFIT</span><span id="pnlNet" class="pos">$0.00</span></div>
     </div>
@@ -309,16 +325,17 @@
     </div>
     <button class="btn btn-primary" onclick="saveSettings()">Save</button>
   </div>
-  <div class="form-card"><h3>Commission Rates</h3>
+  <div class="form-card"><h3>Rates</h3>
     <div class="form-row">
       <label>Employee Commission (%) <input type="number" id="sCommRate" value="15"></label>
       <label>Cut Fee ($) <input type="number" id="sCutFee" value="20"></label>
       <label>Material Cost (%) <input type="number" id="sMatCost" value="60"></label>
+      <label>Delivery Short ≤30km ($) <input type="number" id="sDelShort" value="50"></label>
+      <label>Delivery Long >30km ($) <input type="number" id="sDelLong" value="75"></label>
     </div>
     <button class="btn btn-primary" onclick="saveSettings()">Save Rates</button>
   </div>
   <div class="form-card" style="border-left:4px solid var(--red);"><h3 style="color:var(--red);">Danger Zone</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Clear all manager data.</p>
     <button class="btn btn-danger" onclick="clearAll()">Clear All Data</button>
   </div>
 </div>
@@ -328,8 +345,8 @@
 const FB = 'https://gmc-plexiglass-default-rtdb.firebaseio.com';
 const CUT_RATES = { colored:0.055, t45:0.045, t54:0.045, t3:0.035 };
 let ORDERS=[], CUSTOMERS=[], FILES={};
-let FBDATA={ orders:[], gas:[], hours:[] };
-let SETTINGS={ bizName:'Entreprise GMC Plexiglass inc.', mgrName:'Manager', commRate:15, cutFee:20, matCost:60 };
+let FBDATA={ orders:[], gas:[], hours:[], deliveries:[] };
+let SETTINGS={ bizName:'Entreprise GMC Plexiglass inc.', mgrName:'Manager', commRate:15, cutFee:20, matCost:60, delShort:50, delLong:75 };
 let noType='sheet';
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -340,8 +357,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 function setDates(){
   const t=new Date().toISOString().split('T')[0], ym=t.slice(0,7);
-  ['noDate'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=t;});
-  ['ordFilter','staffFilter','finFilter'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=ym;});
+  const e=document.getElementById('noDate'); if(e) e.value=t;
+  ['ordFilter','staffFilter','finFilter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=ym;});
 }
 
 function loadLocal(){
@@ -360,7 +377,9 @@ function loadSettings(){
   document.getElementById('sMgrName').value=SETTINGS.mgrName;
   document.getElementById('sCommRate').value=SETTINGS.commRate;
   document.getElementById('sCutFee').value=SETTINGS.cutFee;
-  document.getElementById('sMatCost').value=SETTINGS.matCost;}catch(e){}
+  document.getElementById('sMatCost').value=SETTINGS.matCost;
+  document.getElementById('sDelShort').value=SETTINGS.delShort||50;
+  document.getElementById('sDelLong').value=SETTINGS.delLong||75;}catch(e){}
 }
 function saveSettings(){
   SETTINGS.bizName=document.getElementById('sBizName').value;
@@ -368,6 +387,8 @@ function saveSettings(){
   SETTINGS.commRate=parseFloat(document.getElementById('sCommRate').value)||15;
   SETTINGS.cutFee=parseFloat(document.getElementById('sCutFee').value)||20;
   SETTINGS.matCost=parseFloat(document.getElementById('sMatCost').value)||60;
+  SETTINGS.delShort=parseFloat(document.getElementById('sDelShort').value)||50;
+  SETTINGS.delLong=parseFloat(document.getElementById('sDelLong').value)||75;
   localStorage.setItem('gmc_mgr_settings',JSON.stringify(SETTINGS));
   alert('Saved!');
 }
@@ -380,7 +401,7 @@ function clearAll(){
 
 async function syncFB(){
   try{
-    for(const k of['orders','gas','hours']){
+    for(const k of['orders','gas','hours','deliveries']){
       const r=await fetch(`${FB}/${k}.json`);
       if(r.ok){const d=await r.json();FBDATA[k]=Array.isArray(d)?d:[];}
     }
@@ -413,6 +434,7 @@ function setNoType(t){
 }
 
 function calcNo(){
+  const delFee=parseFloat(document.getElementById('noDelivery').value)||0;
   let sub=0;
   if(noType==='sheet'){
     const v=document.getElementById('noMaterial').value;
@@ -421,7 +443,7 @@ function calcNo(){
     const qty=parseInt(document.getElementById('noQty').value)||1;
     const markup=(parseFloat(document.getElementById('noMarkup').value)||0)/100;
     document.getElementById('noSheetPrice').value='$'+price.toFixed(2);
-    sub=price*qty*(1+markup);
+    sub=price*qty*(1+markup)+delFee;
   } else {
     const v=document.getElementById('noCutMat').value;
     if(!v||!v.includes('|')){['noSubtotal','noTPS','noTVQ','noTotal'].forEach(id=>document.getElementById(id).value='');return;}
@@ -429,7 +451,7 @@ function calcNo(){
     const w=parseFloat(document.getElementById('noCutW').value)||0;
     const h=parseFloat(document.getElementById('noCutH').value)||0;
     const qty=parseInt(document.getElementById('noCutQty').value)||1;
-    sub=(w*h*rate+SETTINGS.cutFee)*qty;
+    sub=(w*h*rate+SETTINGS.cutFee)*qty+delFee;
   }
   const tps=sub*0.05, tvq=sub*0.09975;
   document.getElementById('noSubtotal').value='$'+sub.toFixed(2);
@@ -448,10 +470,9 @@ function addOrder(){
   const customer=document.getElementById('noCustomerName').value||document.getElementById('noCustomer').value||'Walk-in';
   const status=document.getElementById('noStatus').value;
   const notes=document.getElementById('noNotes').value;
+  const delFee=parseFloat(document.getElementById('noDelivery').value)||0;
   if(!date){alert('Enter a date.');return;}
-
-  let entry={id:Date.now(),date,customer,type:noType,status,notes,fileId:null};
-
+  let entry={id:Date.now(),date,customer,type:noType,status,notes,fileId:null,deliveryFee:delFee};
   if(noType==='sheet'){
     const v=document.getElementById('noMaterial').value;
     if(!v){alert('Select material.');return;}
@@ -459,7 +480,7 @@ function addOrder(){
     const qty=parseInt(document.getElementById('noQty').value)||1;
     const markup=(parseFloat(document.getElementById('noMarkup').value)||0)/100;
     const matName=v.split('|')[0];
-    const sub=price*qty*(1+markup);
+    const sub=price*qty*(1+markup)+delFee;
     const tps=sub*0.05,tvq=sub*0.09975;
     entry={...entry,material:matName,sheetPrice:price,qty,markup:markup*100,
       subtotal:parseFloat(sub.toFixed(2)),tps:parseFloat(tps.toFixed(2)),
@@ -473,17 +494,15 @@ function addOrder(){
     const h=parseFloat(document.getElementById('noCutH').value)||0;
     const qty=parseInt(document.getElementById('noCutQty').value)||1;
     if(!w||!h){alert('Enter dimensions.');return;}
-    const sub=(w*h*rate+SETTINGS.cutFee)*qty;
+    const sub=(w*h*rate+SETTINGS.cutFee)*qty+delFee;
     const tps=sub*0.05,tvq=sub*0.09975;
     entry={...entry,material:matName,dim1:w,dim2:h,rate,qty,
       subtotal:parseFloat(sub.toFixed(2)),tps:parseFloat(tps.toFixed(2)),
       tvq:parseFloat(tvq.toFixed(2)),total:parseFloat((sub+tps+tvq).toFixed(2))};
   }
-
   if(!CUSTOMERS.find(c=>c.name===customer)){
     CUSTOMERS.push({id:Date.now()+1,name:customer,phone:'',email:'',addedDate:date});
   }
-
   const file=document.getElementById('noFile').files[0];
   if(file){
     const r=new FileReader();
@@ -503,6 +522,7 @@ function clearNo(){
   document.getElementById('noCutMat').value='';
   ['noCutW','noCutH'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('noCutQty').value=1;
+  document.getElementById('noDelivery').value='0';
   ['noSheetPrice','noSubtotal','noTPS','noTVQ','noTotal'].forEach(id=>document.getElementById(id).value='');
 }
 
@@ -526,10 +546,10 @@ function renderOrders(){
   if(!rows.length){tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--muted);">No orders</td></tr>';return;}
   tbody.innerHTML=rows.map(o=>{
     const det=o.type==='sheet'?`${o.qty||1} sheet(s) @$${o.sheetPrice||0}`:`${o.dim1}"×${o.dim2}" ×${o.qty||1}`;
-    const statColors={Pending:'amber','In Progress':'blue',Ready:'blue',Delivered:'green',Paid:'green'};
+    const delTag=o.deliveryFee?` <span class="badge badge-purple">🚚 $${o.deliveryFee}</span>`:'';
     return`<tr>
       <td>${o.date}</td><td>${o.customer}</td>
-      <td><span class="badge badge-${o.type==='sheet'?'blue':'amber'}">${o.type==='sheet'?'Sheet':'Cut'}</span></td>
+      <td><span class="badge badge-${o.type==='sheet'?'blue':'amber'}">${o.type==='sheet'?'Sheet':'Cut'}</span>${delTag}</td>
       <td>${o.material}</td><td style="font-size:12px;">${det}</td>
       <td>$${(o.subtotal||0).toFixed(2)}</td>
       <td>$${(o.tps||0).toFixed(2)}</td>
@@ -544,8 +564,7 @@ function renderOrders(){
 
 function toggleAddCust(){const f=document.getElementById('addCustForm');f.style.display=f.style.display==='none'?'block':'none';}
 function addCustomer(){
-  const name=document.getElementById('cName').value;
-  if(!name){alert('Name required.');return;}
+  const name=document.getElementById('cName').value; if(!name){alert('Name required.');return;}
   CUSTOMERS.push({id:Date.now(),name,phone:document.getElementById('cPhone').value,email:document.getElementById('cEmail').value,addedDate:new Date().toISOString().split('T')[0]});
   sv();['cName','cPhone','cEmail'].forEach(id=>document.getElementById(id).value='');
   toggleAddCust();renderCustomers();updateCustDropdown();
@@ -560,8 +579,7 @@ function renderCustomers(){
   document.getElementById('custTotal').textContent=CUSTOMERS.length;
   const activeSet=new Set(ORDERS.map(o=>o.customer));
   document.getElementById('custActive').textContent=CUSTOMERS.filter(c=>activeSet.has(c.name)).length;
-  const rev=ORDERS.reduce((s,o)=>s+(o.total||0),0);
-  document.getElementById('custRev').textContent='$'+rev.toFixed(0);
+  document.getElementById('custRev').textContent='$'+ORDERS.reduce((s,o)=>s+(o.total||0),0).toFixed(0);
   const tbody=document.getElementById('custTbl');
   if(!CUSTOMERS.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);">No customers</td></tr>';return;}
   tbody.innerHTML=CUSTOMERS.map(c=>{
@@ -573,44 +591,57 @@ function renderCustomers(){
 }
 
 function renderStaff(){
+  if(!FBDATA.deliveries) FBDATA.deliveries=[];
   const month=document.getElementById('staffFilter')?.value;
   const empOrds=month?FBDATA.orders.filter(o=>o.date&&o.date.startsWith(month)):FBDATA.orders;
   const empGas=month?FBDATA.gas.filter(g=>g.date&&g.date.startsWith(month)):FBDATA.gas;
-  const cr=SETTINGS.commRate/100,cf=SETTINGS.cutFee;
+  const empDel=month?FBDATA.deliveries.filter(d=>d.date&&d.date.startsWith(month)):FBDATA.deliveries;
   const sheetComm=empOrds.filter(o=>o.type==='sheet').reduce((s,o)=>s+(o.myTotal||o.myMatComm||0),0);
   const cutMatComm=empOrds.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myMatComm||0),0);
   const cutFees=empOrds.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myCutFee||0),0);
+  const delTotal=empDel.reduce((s,d)=>s+(d.fee||0),0);
   const gasTotal=empGas.reduce((s,g)=>s+(g.amt||0),0);
   document.getElementById('stComm').textContent='$'+sheetComm.toFixed(2);
   document.getElementById('stCutMatComm').textContent='$'+cutMatComm.toFixed(2);
   document.getElementById('stCutFees').textContent='$'+cutFees.toFixed(2);
+  document.getElementById('stDelivery').textContent='$'+delTotal.toFixed(2);
   document.getElementById('stGas').textContent='$'+gasTotal.toFixed(2);
-  document.getElementById('stTotal').textContent='$'+(sheetComm+cutMatComm+cutFees+gasTotal).toFixed(2);
+  document.getElementById('stTotal').textContent='$'+(sheetComm+cutMatComm+cutFees+delTotal+gasTotal).toFixed(2);
   document.getElementById('stSheetOrds').textContent=empOrds.filter(o=>o.type==='sheet').length;
   document.getElementById('stCutOrds').textContent=empOrds.filter(o=>o.type==='cut').length;
+  document.getElementById('stDelCount').textContent=empDel.length;
   document.getElementById('stGasCount').textContent=empGas.length;
   const otbl=document.getElementById('stOrdTbl');
   otbl.innerHTML=empOrds.length?empOrds.map(o=>`<tr><td>${o.date}</td><td>${o.customer||'—'}</td><td>${o.type||'—'}</td><td>${o.material||'—'}</td><td>$${(o.customerPrice||0).toFixed(2)}</td><td style="font-weight:700;color:var(--green);">$${(o.myTotal||0).toFixed(2)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);">No data synced</td></tr>';
+  const dtbl=document.getElementById('stDelTbl');
+  dtbl.innerHTML=empDel.length?empDel.map(d=>{
+    const cls=d.km<=30?'del-50':'del-75';
+    return`<tr><td>${d.date}</td><td>${d.dest||'—'}</td><td>${d.km}km</td><td><span class="del-fee-badge ${cls}">$${d.fee}</span></td></tr>`;
+  }).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--muted);">No deliveries</td></tr>';
   const gtbl=document.getElementById('stGasTbl');
   gtbl.innerHTML=empGas.length?empGas.map(g=>`<tr><td>${g.date}</td><td>${g.desc||'—'}</td><td>$${(g.amt||0).toFixed(2)}</td><td>${g.km||0}km</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--muted);">No data</td></tr>';
 }
 
 function renderFinancials(){
+  if(!FBDATA.deliveries) FBDATA.deliveries=[];
   const month=document.getElementById('finFilter')?.value;
   const mOrds=month?ORDERS.filter(o=>o.date.startsWith(month)):ORDERS;
   const empOrds=month?FBDATA.orders.filter(o=>o.date&&o.date.startsWith(month)):FBDATA.orders;
   const empGas=month?FBDATA.gas.filter(g=>g.date&&g.date.startsWith(month)):FBDATA.gas;
+  const empDel=month?FBDATA.deliveries.filter(d=>d.date&&d.date.startsWith(month)):FBDATA.deliveries;
   const rev=mOrds.reduce((s,o)=>s+(o.total||0),0);
   const matCost=rev*(SETTINGS.matCost/100);
   const sheetComm=empOrds.filter(o=>o.type==='sheet').reduce((s,o)=>s+(o.myTotal||0),0);
   const cutMatComm=empOrds.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myMatComm||0),0);
   const cutFees=empOrds.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myCutFee||0),0);
+  const delFees=empDel.reduce((s,d)=>s+(d.fee||0),0);
   const gas=empGas.reduce((s,g)=>s+(g.amt||0),0);
-  const net=rev-matCost-sheetComm-cutMatComm-cutFees-gas;
+  const net=rev-matCost-sheetComm-cutMatComm-cutFees-delFees-gas;
   document.getElementById('pnlRev').textContent='$'+rev.toFixed(2);
   document.getElementById('pnlMat').textContent='−$'+matCost.toFixed(2);
   document.getElementById('pnlComm').textContent='−$'+(sheetComm+cutMatComm).toFixed(2);
   document.getElementById('pnlCutFees').textContent='−$'+cutFees.toFixed(2);
+  document.getElementById('pnlDelivery').textContent='−$'+delFees.toFixed(2);
   document.getElementById('pnlGas').textContent='−$'+gas.toFixed(2);
   const ne=document.getElementById('pnlNet');ne.textContent=(net>=0?'$':'−$')+Math.abs(net).toFixed(2);ne.className=net>=0?'pos':'neg';
   const matMap={};mOrds.forEach(o=>{matMap[o.material]=(matMap[o.material]||0)+(o.total||0);});
@@ -622,22 +653,25 @@ function renderFinancials(){
 }
 
 function renderDashboard(){
+  if(!FBDATA.deliveries) FBDATA.deliveries=[];
   const ym=new Date().toISOString().slice(0,7);
   const mO=ORDERS.filter(o=>o.date.startsWith(ym));
   const eO=FBDATA.orders.filter(o=>o.date&&o.date.startsWith(ym));
   const eG=FBDATA.gas.filter(g=>g.date&&g.date.startsWith(ym));
+  const eD=FBDATA.deliveries.filter(d=>d.date&&d.date.startsWith(ym));
   const rev=mO.reduce((s,o)=>s+(o.total||0),0);
   const sheets=mO.filter(o=>o.type==='sheet').reduce((s,o)=>s+(o.qty||1),0);
   const sheetComm=eO.filter(o=>o.type==='sheet').reduce((s,o)=>s+(o.myTotal||0),0);
   const cutMatComm=eO.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myMatComm||0),0);
   const cutFees=eO.filter(o=>o.type==='cut').reduce((s,o)=>s+(o.myCutFee||0),0);
+  const delFees=eD.reduce((s,d)=>s+(d.fee||0),0);
   const gas=eG.reduce((s,g)=>s+(g.amt||0),0);
-  const staffCost=sheetComm+cutMatComm+cutFees+gas;
+  const staffCost=sheetComm+cutMatComm+cutFees+delFees+gas;
   const profit=rev-rev*(SETTINGS.matCost/100)-staffCost;
   document.getElementById('dRev').textContent='$'+rev.toFixed(0);
   document.getElementById('dOrdCount').textContent=mO.length;
   document.getElementById('dSheets').textContent=sheets;
-  document.getElementById('dStaffCost').textContent='$'+staffCost.toFixed(0);
+  document.getElementById('dDelCount').textContent=eD.length;
   document.getElementById('dProfit').textContent='$'+profit.toFixed(0);
   const tbody=document.getElementById('recentOrdTbl');
   const recent=ORDERS.slice(0,6);
@@ -660,7 +694,8 @@ function printInv(id){
   const o=ORDERS.find(x=>x.id===id);if(!o)return;
   const w=window.open('','_blank');
   const det=o.type==='sheet'?`${o.qty||1} sheet(s) of ${o.material} @ $${o.sheetPrice||0}`:`Cut: ${o.material} ${o.dim1}"×${o.dim2}" ×${o.qty||1}`;
-  w.document.write(`<!DOCTYPE html><html><head><title>Invoice</title><style>body{font-family:Arial,sans-serif;padding:24px;max-width:600px;margin:0 auto;}h1{color:#1a3c5e;}.total{font-size:18px;font-weight:700;color:#27ae60;}@media print{button{display:none;}}</style></head><body><h1>Entreprise GMC Plexiglass inc.</h1><p>Date: ${o.date} | Customer: <strong>${o.customer}</strong></p><hr><p>${det}</p><p>Subtotal: $${(o.subtotal||0).toFixed(2)}</p><p>TPS (5%): $${(o.tps||0).toFixed(2)}</p><p>TVQ (9.975%): $${(o.tvq||0).toFixed(2)}</p><p class="total">TOTAL: $${(o.total||0).toFixed(2)}</p><p>Status: ${o.status}</p>${o.notes?`<p>Notes: ${o.notes}</p>`:''}<button onclick="window.print()">Print</button></body></html>`);
+  const delLine=o.deliveryFee?`<p>Delivery: $${o.deliveryFee.toFixed(2)}</p>`:'';
+  w.document.write(`<!DOCTYPE html><html><head><title>Invoice</title><style>body{font-family:Arial,sans-serif;padding:24px;max-width:600px;margin:0 auto;}h1{color:#1a3c5e;}.total{font-size:18px;font-weight:700;color:#27ae60;}@media print{button{display:none;}}</style></head><body><h1>Entreprise GMC Plexiglass inc.</h1><p>Date: ${o.date} | Customer: <strong>${o.customer}</strong></p><hr><p>${det}</p>${delLine}<p>Subtotal: $${(o.subtotal||0).toFixed(2)}</p><p>TPS (5%): $${(o.tps||0).toFixed(2)}</p><p>TVQ (9.975%): $${(o.tvq||0).toFixed(2)}</p><p class="total">TOTAL: $${(o.total||0).toFixed(2)}</p><p>Status: ${o.status}</p>${o.notes?`<p>Notes: ${o.notes}</p>`:''}<button onclick="window.print()">Print</button></body></html>`);
   w.document.close();
 }
 
@@ -668,8 +703,8 @@ function exportCSV(){
   const month=document.getElementById('ordFilter')?.value;
   const rows=month?ORDERS.filter(o=>o.date.startsWith(month)):ORDERS;
   if(!rows.length){alert('No orders.');return;}
-  const h=['Date','Customer','Type','Material','Subtotal','TPS','TVQ','Total','Status','Notes'];
-  const csv=[h.join(','),...rows.map(o=>[o.date,`"${o.customer}"`,o.type,`"${o.material}"`,o.subtotal||0,o.tps||0,o.tvq||0,o.total||0,`"${o.status}"`,`"${o.notes||''}"`].join(','))].join('\n');
+  const h=['Date','Customer','Type','Material','Subtotal','TPS','TVQ','Total','Delivery Fee','Status'];
+  const csv=[h.join(','),...rows.map(o=>[o.date,`"${o.customer}"`,o.type,`"${o.material}"`,o.subtotal||0,o.tps||0,o.tvq||0,o.total||0,o.deliveryFee||0,`"${o.status}"`].join(','))].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='GMC_Orders.csv';a.click();
 }
 
